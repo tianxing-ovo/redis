@@ -6,8 +6,8 @@ import com.ltx.constant.SystemConstant;
 import com.ltx.dto.UserDTO;
 import com.ltx.entity.Blog;
 import com.ltx.service.BlogService;
+import com.ltx.util.UserHolder;
 import io.github.tianxingovo.common.R;
-import io.github.tianxingovo.common.ThreadLocalUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,7 +34,7 @@ public class BlogController {
     @GetMapping("/of/me")
     public R queryMyBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 获取登录用户
-        UserDTO userDTO = ThreadLocalUtil.get();
+        UserDTO userDTO = UserHolder.get();
         // 根据用户查询
         Page<Blog> page = blogService.query()
                 .eq("user_id", userDTO.getId()).page(new Page<>(current, SystemConstant.MAX_PAGE_SIZE));

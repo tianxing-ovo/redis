@@ -3,7 +3,7 @@ package com.ltx.interceptor;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ltx.dto.UserDTO;
-import io.github.tianxingovo.common.ThreadLocalUtil;
+import com.ltx.util.UserHolder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -40,8 +40,8 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         }
         // 5.将查询到的hash数据转为UserDTO
         UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
-        // 6.存在，保存用户信息到 ThreadLocal
-        ThreadLocalUtil.set(userDTO);
+        // 6.存在,保存用户信息到 ThreadLocal
+        UserHolder.set(userDTO);
         // 7.刷新token有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
         // 8.放行
@@ -51,6 +51,6 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, Exception ex) {
         // 移除用户
-        ThreadLocalUtil.remove();
+        UserHolder.remove();
     }
 }

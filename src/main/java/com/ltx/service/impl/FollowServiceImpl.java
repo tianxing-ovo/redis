@@ -8,8 +8,8 @@ import com.ltx.entity.Follow;
 import com.ltx.mapper.FollowMapper;
 import com.ltx.service.FollowService;
 import com.ltx.service.UserService;
+import com.ltx.util.UserHolder;
 import io.github.tianxingovo.common.R;
-import io.github.tianxingovo.common.ThreadLocalUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +31,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public R follow(Long followUserId, Boolean isFollow) {
         // 1.获取登录用户
-        UserDTO userDTO = ThreadLocalUtil.get();
-        Long userId = userDTO.getId();
+        Long userId = UserHolder.getUserId();
         String key = "follows:" + userId;
         // 1.判断到底是关注还是取关
         if (isFollow) {
@@ -60,8 +59,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public R isFollow(Long followUserId) {
         // 1.获取登录用户
-        UserDTO userDTO = ThreadLocalUtil.get();
-        Long userId = userDTO.getId();
+        Long userId = UserHolder.getUserId();
         // 2.查询是否关注 select count(*) from tb_follow where user_id = ? and follow_user_id = ?
         Long count = query().eq("user_id", userId).eq("follow_user_id", followUserId).count();
         // 3.判断
@@ -71,8 +69,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public R followCommons(Long id) {
         // 1.获取当前用户
-        UserDTO userDTO = ThreadLocalUtil.get();
-        Long userId = userDTO.getId();
+        Long userId = UserHolder.getUserId();
         String key = "follows:" + userId;
         // 2.求交集
         String key2 = "follows:" + id;

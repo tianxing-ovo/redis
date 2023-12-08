@@ -14,8 +14,8 @@ import com.ltx.mapper.BlogMapper;
 import com.ltx.service.BlogService;
 import com.ltx.service.FollowService;
 import com.ltx.service.UserService;
+import com.ltx.util.UserHolder;
 import io.github.tianxingovo.common.R;
-import io.github.tianxingovo.common.ThreadLocalUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -69,7 +69,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     private void isBlogLiked(Blog blog) {
         // 1.获取登录用户
-        UserDTO user = ThreadLocalUtil.get();
+        UserDTO user = UserHolder.get();
         if (user == null) {
             // 用户未登录，无需查询是否点赞
             return;
@@ -83,7 +83,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     @Override
     public R likeBlog(Long id) {
-        UserDTO userDTO = ThreadLocalUtil.get();
+        UserDTO userDTO = UserHolder.get();
         // 1.获取登录用户
         Long userId = userDTO.getId();
         // 2.判断当前登录用户是否已经点赞
@@ -133,7 +133,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
     @Override
     public R saveBlog(Blog blog) {
         // 1.获取登录用户
-        UserDTO user = ThreadLocalUtil.get();
+        UserDTO user = UserHolder.get();
         blog.setUserId(user.getId());
         // 2.保存探店笔记
         boolean isSuccess = save(blog);
@@ -156,7 +156,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     @Override
     public R queryBlogOfFollow(Long max, Integer offset) {
-        UserDTO userDTO = ThreadLocalUtil.get();
+        UserDTO userDTO = UserHolder.get();
         // 1.获取当前用户
         Long userId = userDTO.getId();
         // 2.查询收件箱

@@ -12,8 +12,8 @@ import com.ltx.entity.User;
 import com.ltx.mapper.UserMapper;
 import com.ltx.service.UserService;
 import com.ltx.util.RegexUtils;
+import com.ltx.util.UserHolder;
 import io.github.tianxingovo.common.R;
-import io.github.tianxingovo.common.ThreadLocalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -105,7 +105,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public R sign() {
         // 1.获取当前登录用户
-        UserDTO userDTO = ThreadLocalUtil.get();
+        UserDTO userDTO = UserHolder.get();
         Long userId = userDTO.getId();
         // 2.获取日期
         LocalDateTime now = LocalDateTime.now();
@@ -122,7 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public R signCount() {
         // 1.获取当前登录用户
-        UserDTO userDTO = ThreadLocalUtil.get();
+        UserDTO userDTO = UserHolder.get();
         Long userId = userDTO.getId();
         // 2.获取日期
         LocalDateTime now = LocalDateTime.now();

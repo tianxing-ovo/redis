@@ -8,8 +8,8 @@ import com.ltx.entity.User;
 import com.ltx.entity.UserInfo;
 import com.ltx.service.UserInfoService;
 import com.ltx.service.UserService;
+import com.ltx.util.UserHolder;
 import io.github.tianxingovo.common.R;
-import io.github.tianxingovo.common.ThreadLocalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +59,7 @@ public class UserController {
     @GetMapping("/me")
     public R me() {
         // 获取当前登录的用户并返回
-        UserDTO userDTO = ThreadLocalUtil.get();
+        UserDTO userDTO = UserHolder.get();
         return R.ok().put("userDTO", userDTO);
     }
 
