@@ -1,7 +1,7 @@
 package com.ltx.interceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import com.ltx.util.UserHolder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;

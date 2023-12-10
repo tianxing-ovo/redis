@@ -9,7 +9,7 @@ import com.ltx.mapper.FollowMapper;
 import com.ltx.service.FollowService;
 import com.ltx.service.UserService;
 import com.ltx.util.UserHolder;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 

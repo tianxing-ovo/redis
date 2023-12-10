@@ -13,7 +13,7 @@ import com.ltx.mapper.UserMapper;
 import com.ltx.service.UserService;
 import com.ltx.util.RegexUtils;
 import com.ltx.util.UserHolder;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import io.github.tianxingovo.common.SMSUtil;
 import io.github.tianxingovo.redis.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -123,4 +123,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         save(user);
         return user;
     }
+
+
 }

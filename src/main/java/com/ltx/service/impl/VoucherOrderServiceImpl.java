@@ -8,7 +8,7 @@ import com.ltx.service.SeckillVoucherService;
 import com.ltx.service.VoucherOrderService;
 import com.ltx.util.RedisIdWorker;
 import com.ltx.util.UserHolder;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;

@@ -3,7 +3,7 @@ package com.ltx.controller;
 
 import com.ltx.entity.Voucher;
 import com.ltx.service.VoucherService;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

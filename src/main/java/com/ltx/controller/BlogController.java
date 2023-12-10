@@ -7,7 +7,7 @@ import com.ltx.dto.UserDTO;
 import com.ltx.entity.Blog;
 import com.ltx.service.BlogService;
 import com.ltx.util.UserHolder;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

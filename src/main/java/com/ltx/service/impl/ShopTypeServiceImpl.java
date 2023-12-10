@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ltx.entity.ShopType;
 import com.ltx.mapper.ShopTypeMapper;
 import com.ltx.service.ShopTypeService;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import io.github.tianxingovo.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 

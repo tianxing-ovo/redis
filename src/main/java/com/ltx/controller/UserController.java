@@ -8,7 +8,7 @@ import com.ltx.entity.User;
 import com.ltx.entity.UserInfo;
 import com.ltx.service.UserInfoService;
 import com.ltx.service.UserService;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import com.ltx.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

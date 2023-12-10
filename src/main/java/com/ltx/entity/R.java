@@ -1,4 +1,4 @@
-package com.ltx.util;
+package com.ltx.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

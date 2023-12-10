@@ -4,7 +4,7 @@ package com.ltx.controller;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ltx.constant.SystemConstant;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

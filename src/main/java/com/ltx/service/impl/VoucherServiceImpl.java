@@ -7,7 +7,7 @@ import com.ltx.entity.Voucher;
 import com.ltx.mapper.VoucherMapper;
 import com.ltx.service.SeckillVoucherService;
 import com.ltx.service.VoucherService;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

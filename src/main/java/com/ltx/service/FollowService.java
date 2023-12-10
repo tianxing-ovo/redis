@@ -2,7 +2,7 @@ package com.ltx.service;
 
 import com.ltx.entity.Follow;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ltx.util.R;
+import com.ltx.entity.R;
 
 
 public interface FollowService extends IService<Follow> {
