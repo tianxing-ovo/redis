@@ -8,7 +8,7 @@ import com.ltx.service.SeckillVoucherService;
 import com.ltx.service.VoucherOrderService;
 import com.ltx.util.RedisIdWorker;
 import com.ltx.util.UserHolder;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -125,13 +125,13 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         if (l != null) {
             r = l.intValue();
         }
-        // 2.判断结果是否为0
+        // 判断结果是否为0
         if (r != 0) {
             // 2.1.不为0 ，代表没有购买资格
-            return R.error(400, r == 1 ? "库存不足" : "不能重复下单");
+            return R.fail( r == 1 ? "库存不足" : "不能重复下单");
         }
-        // 3.返回订单id
-        return R.ok().put("id", orderId);
+        // 返回订单id
+        return R.ok(orderId);
     }
 
     /*@Override

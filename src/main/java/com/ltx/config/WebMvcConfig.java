@@ -24,12 +24,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
      * 添加拦截器
      * addPathPatterns: 拦截路径
      * excludePathPatterns: 不拦截路径
+     * order小的先执行
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(refreshTokenInterceptor).order(1);
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**").
-                excludePathPatterns("/login").order(2);
+                excludePathPatterns("/user/code", "/user/login", "/blog/hot", "/shop/**", "/shop-type/**", "/upload/**", "/voucher/**").order(2);
     }
 }

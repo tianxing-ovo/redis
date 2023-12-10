@@ -1,36 +1,23 @@
 package com.ltx.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
-/**
- * <p>
- * 
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_shop")
-public class Shop implements Serializable {
+public class Shop extends BasePojo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
@@ -39,17 +26,17 @@ public class Shop implements Serializable {
     private String name;
 
     /**
-     * 商铺类型的id
+     * 商铺类型
      */
     private Long typeId;
 
     /**
-     * 商铺图片，多个图片以','隔开
+     * 商铺图片,多个图片以','隔开
      */
     private String images;
 
     /**
-     * 商圈，例如陆家嘴
+     * 商圈,例如陆家嘴
      */
     private String area;
 
@@ -64,12 +51,12 @@ public class Shop implements Serializable {
     private Double x;
 
     /**
-     * 维度
+     * 纬度
      */
     private Double y;
 
     /**
-     * 均价，取整数
+     * 均价,取整数
      */
     private Long avgPrice;
 
@@ -84,25 +71,14 @@ public class Shop implements Serializable {
     private Integer comments;
 
     /**
-     * 评分，1~5分，乘10保存，避免小数
+     * 评分,1~5分,乘10保存,避免小数
      */
     private Integer score;
 
     /**
-     * 营业时间，例如 10:00-22:00
+     * 营业时间,例如 10:00-22:00
      */
     private String openHours;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateTime;
-
 
     @TableField(exist = false)
     private Double distance;

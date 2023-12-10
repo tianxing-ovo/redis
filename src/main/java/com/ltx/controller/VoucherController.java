@@ -3,7 +3,7 @@ package com.ltx.controller;
 
 import com.ltx.entity.Voucher;
 import com.ltx.service.VoucherService;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -22,7 +22,7 @@ public class VoucherController {
     @PostMapping("seckill")
     public R addSeckillVoucher(@RequestBody Voucher voucher) {
         voucherService.addSeckillVoucher(voucher);
-        return R.ok().put("id", voucher.getId());
+        return R.ok(voucher.getId());
     }
 
     /**
@@ -31,7 +31,7 @@ public class VoucherController {
     @PostMapping
     public R addVoucher(@RequestBody Voucher voucher) {
         voucherService.save(voucher);
-        return R.ok().put("id", voucher.getId());
+        return R.ok(voucher.getId());
     }
 
 

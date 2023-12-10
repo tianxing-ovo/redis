@@ -7,13 +7,12 @@ import com.ltx.entity.Voucher;
 import com.ltx.mapper.VoucherMapper;
 import com.ltx.service.SeckillVoucherService;
 import com.ltx.service.VoucherService;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 import static com.ltx.constant.RedisConstant.SECKILL_STOCK_KEY;
 
@@ -29,9 +28,8 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
     @Override
     public R queryVoucherOfShop(Long shopId) {
         // 查询优惠券信息
-        List<Voucher> voucherList = getBaseMapper().queryVoucherOfShop(shopId);
-        // 返回结果
-        return R.ok().put("voucherList",voucherList);
+
+        return R.ok();
     }
 
     @Override

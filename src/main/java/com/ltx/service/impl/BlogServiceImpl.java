@@ -15,7 +15,7 @@ import com.ltx.service.BlogService;
 import com.ltx.service.FollowService;
 import com.ltx.service.UserService;
 import com.ltx.util.UserHolder;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
             this.queryBlogUser(blog);
             this.isBlogLiked(blog);
         });
-        return R.ok().put("blogList", blogList);
+        return R.ok(blogList);
     }
 
     @Override
@@ -58,13 +58,13 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         // 1.查询blog
         Blog blog = getById(id);
         if (blog == null) {
-            return R.error(400, "笔记不存在！");
+            return R.fail("笔记不存在!");
         }
         // 2.查询blog有关的用户
         queryBlogUser(blog);
         // 3.查询blog是否被点赞
         isBlogLiked(blog);
-        return R.ok().put("blog", blog);
+        return R.ok(blog);
     }
 
     private void isBlogLiked(Blog blog) {
@@ -115,7 +115,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         // 1.查询top5的点赞用户
         Set<String> top5 = stringRedisTemplate.opsForZSet().range(key, 0, 4);
         if (top5 == null || top5.isEmpty()) {
-            return R.ok().put("list", Collections.emptyList());
+            return R.ok(Collections.emptyList());
         }
         // 2.解析出其中的用户id
         List<Long> ids = top5.stream().map(Long::valueOf).collect(Collectors.toList());
@@ -127,7 +127,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
                 .map(user -> BeanUtil.copyProperties(user, UserDTO.class))
                 .collect(Collectors.toList());
         // 4.返回
-        return R.ok().put("userDTOList", userDTOList);
+        return R.ok(userDTOList);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         // 2.保存探店笔记
         boolean isSuccess = save(blog);
         if (!isSuccess) {
-            return R.error(400, "新增笔记失败!");
+            return R.fail("新增笔记失败!");
         }
         // 3.查询笔记作者的所有粉丝 select * from tb_follow where follow_user_id = ?
         List<Follow> follows = followService.query().eq("follow_user_id", user.getId()).list();
@@ -150,8 +150,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
             String key = "" + userId;
             stringRedisTemplate.opsForZSet().add(key, blog.getId().toString(), System.currentTimeMillis());
         }
-        // 5.返回id
-        return R.ok().put("id", blog.getId());
+        // 返回id
+        return R.ok(blog.getId());
     }
 
     @Override
@@ -196,12 +196,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         }
 
         // 6.封装并返回
-        ScrollR r = new ScrollR();
-        r.setList(blogs);
-        r.setOffset(os);
-        r.setMinTime(minTime);
+        ScrollR scrollR = new ScrollR();
+        scrollR.setList(blogs);
+        scrollR.setOffset(os);
+        scrollR.setMinTime(minTime);
 
-        return R.ok().put("r", r);
+        return R.ok(scrollR);
     }
 
     private void queryBlogUser(Blog blog) {

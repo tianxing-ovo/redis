@@ -4,7 +4,7 @@ package com.ltx.controller;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ltx.constant.SystemConstant;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +39,7 @@ public class UploadController {
     public R deleteBlogImg(@RequestParam("name") String filename) {
         File file = new File(SystemConstant.IMAGE_UPLOAD_DIR, filename);
         if (file.isDirectory()) {
-            return R.error(400, "错误的文件名称");
+            return R.fail("错误的文件名称");
         }
         FileUtil.del(file);
         return R.ok();

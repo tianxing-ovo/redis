@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ltx.constant.SystemConstant;
 import com.ltx.entity.Shop;
 import com.ltx.service.ShopService;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -21,7 +21,7 @@ public class ShopController {
     public ShopService shopService;
 
     /**
-     * 根据id查询商铺信息
+     * 根据商铺id查询商铺详情
      */
     @GetMapping("/{id}")
     public R queryShopById(@PathVariable("id") Long id) {
@@ -30,16 +30,13 @@ public class ShopController {
 
     /**
      * 新增商铺信息
-     *
-     * @param shop 商铺数据
-     * @return 商铺id
      */
     @PostMapping
     public R saveShop(@RequestBody Shop shop) {
         // 写入数据库
         shopService.save(shop);
         // 返回店铺id
-        return R.ok().put("id", shop.getId());
+        return R.ok(shop.getId());
     }
 
     /**
@@ -47,12 +44,16 @@ public class ShopController {
      */
     @PutMapping
     public R updateShop(@RequestBody Shop shop) {
-        shopService.update(shop, null);
-        return R.ok();
+        return shopService.update(shop);
     }
 
     /**
-     * 根据商铺类型分页查询商铺信息
+     * 根据商铺类型分页查询商铺
+     *
+     * @param typeId  商铺类型
+     * @param current 页码
+     * @param x       经度
+     * @param y       纬度
      */
     @GetMapping("/of/type")
     public R queryShopByType(
@@ -77,6 +78,6 @@ public class ShopController {
                 .like(StrUtil.isNotBlank(name), "name", name)
                 .page(new Page<>(current, SystemConstant.MAX_PAGE_SIZE)).getRecords();
 
-        return R.ok().put("shopList", shopList);
+        return R.ok(shopList);
     }
 }

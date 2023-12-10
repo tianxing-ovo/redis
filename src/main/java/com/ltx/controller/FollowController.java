@@ -2,7 +2,7 @@ package com.ltx.controller;
 
 
 import com.ltx.service.FollowService;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

@@ -2,7 +2,6 @@ package com.ltx.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -10,19 +9,11 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * <p>
- * 
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_voucher_order")
-public class VoucherOrder implements Serializable {
+public class VoucherOrder extends BasePojo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -52,10 +43,6 @@ public class VoucherOrder implements Serializable {
      */
     private Integer status;
 
-    /**
-     * 下单时间
-     */
-    private LocalDateTime createTime;
 
     /**
      * 支付时间
@@ -71,11 +58,6 @@ public class VoucherOrder implements Serializable {
      * 退款时间
      */
     private LocalDateTime refundTime;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateTime;
 
 
 }

@@ -1,11 +1,11 @@
 package com.ltx.interceptor;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ltx.dto.UserDTO;
 import com.ltx.util.UserHolder;
+import io.github.tianxingovo.redis.RedisUtil;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -15,36 +15,41 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.ltx.constant.RedisConstant.LOGIN_USER_KEY;
-import static com.ltx.constant.RedisConstant.LOGIN_USER_TTL;
+import static com.ltx.constant.RedisConstant.LOGIN_TOKEN_KEY;
+import static com.ltx.constant.RedisConstant.LOGIN_TOKEN_TTL;
 
+/**
+ * 拦截所有请求
+ */
 @Component
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    RedisUtil redisUtil;
+
+    @Resource
+    ObjectMapper mapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
-        // 1.获取请求头中的token
+        // 获取请求头中的token
         String token = request.getHeader("authorization");
         if (StrUtil.isBlank(token)) {
             return true;
         }
-        // 2.基于TOKEN获取redis中的用户
-        String key = LOGIN_USER_KEY + token;
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(key);
-        // 3.判断用户是否存在
+        // 基于token获取redis中的用户
+        String key = LOGIN_TOKEN_KEY + token;
+        Map<String, String> userMap = redisUtil.entries(key);
+        // 如果用户不存在
         if (userMap.isEmpty()) {
             return true;
         }
-        // 5.将查询到的hash数据转为UserDTO
-        UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
-        // 6.存在,保存用户信息到 ThreadLocal
+        // Map转为UserDTO
+        UserDTO userDTO = mapper.convertValue(userMap, UserDTO.class);
+        // 保存用户信息到ThreadLocal中
         UserHolder.set(userDTO);
-        // 7.刷新token有效期
-        stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
-        // 8.放行
+        // 只要用户对网页进行访问,就刷新token过期时间
+        redisUtil.expire(key, LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
         return true;
     }
 

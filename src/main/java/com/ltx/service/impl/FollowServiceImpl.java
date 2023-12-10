@@ -9,7 +9,7 @@ import com.ltx.mapper.FollowMapper;
 import com.ltx.service.FollowService;
 import com.ltx.service.UserService;
 import com.ltx.util.UserHolder;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -58,12 +58,12 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Override
     public R isFollow(Long followUserId) {
-        // 1.获取登录用户
+        // 获取登录用户
         Long userId = UserHolder.getUserId();
-        // 2.查询是否关注 select count(*) from tb_follow where user_id = ? and follow_user_id = ?
+        // 查询是否关注 select count(*) from tb_follow where user_id = ? and follow_user_id = ?
         Long count = query().eq("user_id", userId).eq("follow_user_id", followUserId).count();
-        // 3.判断
-        return R.ok().put("b", count > 0);
+        // 判断
+        return R.ok(count > 0);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         Set<String> intersect = stringRedisTemplate.opsForSet().intersect(key, key2);
         if (intersect == null || intersect.isEmpty()) {
             // 无交集
-            return R.ok().put("list", Collections.emptyList());
+            return R.ok(Collections.emptyList());
         }
         // 3.解析id集合
         List<Long> ids = intersect.stream().map(Long::valueOf).collect(Collectors.toList());
@@ -85,6 +85,6 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 .stream()
                 .map(user -> BeanUtil.copyProperties(user, UserDTO.class))
                 .collect(Collectors.toList());
-        return R.ok().put("userDTOList", userDTOList);
+        return R.ok(userDTOList);
     }
 }

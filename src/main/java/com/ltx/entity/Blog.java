@@ -3,20 +3,17 @@ package com.ltx.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_blog")
-public class Blog implements Serializable {
+public class Blog extends BasePojo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -73,16 +70,5 @@ public class Blog implements Serializable {
      * 评论数量
      */
     private Integer comments;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateTime;
-
 
 }

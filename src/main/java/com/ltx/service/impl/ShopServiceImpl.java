@@ -1,20 +1,24 @@
 package com.ltx.service.impl;
 
+import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ltx.constant.SystemConstant;
 import com.ltx.entity.Shop;
 import com.ltx.mapper.ShopMapper;
 import com.ltx.service.ShopService;
-import io.github.tianxingovo.common.R;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import com.ltx.util.R;
+import io.github.tianxingovo.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-
+import static com.ltx.constant.RedisConstant.*;
 
 
 @Service
@@ -22,49 +26,92 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisUtil redisUtil;
 
-
-
+    /**
+     * 根据商铺id查询商铺详情
+     */
     @Override
     public R queryById(Long id) {
-        // 解决缓存穿透
-
-        // 7.返回
-        return R.ok();
+        return queryByIdWithMutex(id);
     }
 
+    /**
+     * 互斥锁解决缓存击穿
+     */
+    private R queryByIdWithMutex(Long id) {
+        String key = CACHE_SHOP_KEY + id;
+        String shopStr = redisUtil.get(key);
+        Shop shop;
+        if (StrUtil.isNotBlank(shopStr)) {
+            shop = JSONUtil.toBean(shopStr, Shop.class);
+            return R.ok(shop);
+        }
+        if ("".equals(shopStr)) {
+            return R.fail("商铺不存在");
+        }
+        // 使用redis作为互斥锁,防止缓存击穿
+        String lockKey = LOCK_SHOP_KEY + id;
+        try {
+            boolean b = tryLock(lockKey);
+            if (!b) {
+                // 休眠并重试
+                Thread.sleep(50);
+                return queryById(id);
+            }
+            shop = getById(id);
+            if (shop == null) {
+                // 将空字符串写入redis,防止缓存穿透
+                redisUtil.set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
+                return R.fail("商铺不存在");
+            }
+            // 过期时间加上随机值,防止缓存雪崩
+            redisUtil.set(key, JSONUtil.toJsonStr(shop), CACHE_SHOP_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            unlock(lockKey);
+        }
+        return R.ok(shop);
+    }
+
+    /**
+     * 更新商铺信息
+     */
     @Override
     @Transactional
     public R update(Shop shop) {
         Long id = shop.getId();
         if (id == null) {
-            return R.error(400,"店铺id不能为空");
+            return R.fail("店铺id不能为空");
         }
-        // 1.更新数据库
+        // 更新数据库
         updateById(shop);
-        // 2.删除缓存
-        stringRedisTemplate.delete("" + id);
+        // 删除缓存
+        redisUtil.delete(CACHE_SHOP_KEY + id);
         return R.ok();
     }
 
+
     @Override
     public R queryShopByType(Integer typeId, Integer current, Double x, Double y) {
-        // 1.判断是否需要根据坐标查询
-        if (x == null || y == null) {
-            // 不需要坐标查询，按数据库查询
-            List<Shop> shopList = query().eq("type_id", typeId)
-                    .page(new Page<>(current, SystemConstant.DEFAULT_PAGE_SIZE)).getRecords();
-            // 返回数据
-            return R.ok().put("shopList",shopList);
-        }
+        Page<Shop> page = new Page<>(current, SystemConstant.DEFAULT_PAGE_SIZE);
+        Page<Shop> shopPage = query().eq("type_id", typeId).page(page);
+        return R.ok(shopPage.getRecords(), shopPage.getTotal());
+    }
 
-        // 2.计算分页参数
-        int from = (current - 1) * SystemConstant.DEFAULT_PAGE_SIZE;
-        int end = current * SystemConstant.DEFAULT_PAGE_SIZE;
+    /**
+     * 尝试获取锁
+     */
+    private boolean tryLock(String key) {
+        Boolean b = redisUtil.setIfAbsent(key, "1", LOCK_SHOP_TTL, TimeUnit.SECONDS);
+        return BooleanUtil.isTrue(b);
+    }
 
-        // 3.查询redis、按照距离排序、分页。结果：shopId、distance
-        String key = "" + typeId;
-        return R.ok();
+    /**
+     * 释放锁
+     */
+    private void unlock(String key) {
+        redisUtil.delete(key);
     }
 }

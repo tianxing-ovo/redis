@@ -7,7 +7,7 @@ import com.ltx.dto.UserDTO;
 import com.ltx.entity.Blog;
 import com.ltx.service.BlogService;
 import com.ltx.util.UserHolder;
-import io.github.tianxingovo.common.R;
+import com.ltx.util.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,7 +40,7 @@ public class BlogController {
                 .eq("user_id", userDTO.getId()).page(new Page<>(current, SystemConstant.MAX_PAGE_SIZE));
         // 获取当前页数据
         List<Blog> blogList = page.getRecords();
-        return R.ok().put("blogList", blogList);
+        return R.ok(blogList);
     }
 
     @GetMapping("/hot")
@@ -67,7 +67,7 @@ public class BlogController {
                 .eq("user_id", id).page(new Page<>(current, SystemConstant.MAX_PAGE_SIZE));
         // 获取当前页数据
         List<Blog> blogList = page.getRecords();
-        return R.ok().put("blogList", blogList);
+        return R.ok(blogList);
     }
 
     @GetMapping("/of/follow")
