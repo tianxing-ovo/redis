@@ -3,9 +3,9 @@ package com.ltx.service.impl;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ltx.constant.SystemConstant;
 import com.ltx.entity.R;
 import com.ltx.entity.RedisData;
@@ -13,11 +13,13 @@ import com.ltx.entity.Shop;
 import com.ltx.mapper.ShopMapper;
 import com.ltx.service.ShopService;
 import io.github.tianxingovo.redis.RedisUtil;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.ltx.constant.RedisConstant.*;
@@ -30,12 +32,18 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private ThreadPoolExecutor executor;
+
+    @Resource
+    private ObjectMapper mapper;
+
     /**
      * 根据商铺id查询商铺详情
      */
     @Override
     public R queryById(Long id) {
-        return queryByIdWithMutex(id);
+        return queryByIdWithLogicalExpire(id);
     }
 
 
@@ -82,12 +90,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     /**
      * 互斥锁解决缓存击穿
      */
+    @SneakyThrows
     private R queryByIdWithMutex(Long id) {
         String key = CACHE_SHOP_KEY + id;
         String str = redisUtil.get(key);
         Shop shop;
         if (StrUtil.isNotBlank(str)) {
-            shop = JSONUtil.toBean(str, Shop.class);
+            shop = mapper.readValue(str, Shop.class);
             return R.ok(shop);
         }
         if ("".equals(str)) {
@@ -109,7 +118,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
                 return R.fail("商铺不存在");
             }
             // 过期时间加上随机值,防止缓存雪崩
-            redisUtil.set(key, JSONUtil.toJsonStr(shop), CACHE_SHOP_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
+            redisUtil.set(key, mapper.writeValueAsString(shop), CACHE_SHOP_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -121,6 +130,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     /**
      * 逻辑过期解决缓存击穿
      */
+    @SneakyThrows
     private R queryByIdWithLogicalExpire(Long id) {
         String key = CACHE_SHOP_KEY + id;
         String str = redisUtil.get(key);
@@ -128,18 +138,34 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         if (StrUtil.isBlank(str)) {
             return R.ok();
         }
-        RedisData redisData = JSONUtil.toBean(str, RedisData.class);
-        LocalDateTime localDateTime = redisData.getExpireTime();
-
-        return R.ok();
+        RedisData redisData = mapper.readValue(str, RedisData.class);
+        // 如果缓存未过期,直接返回数据
+        if (LocalDateTime.now().isBefore(redisData.getExpireTime())) {
+            return R.ok(redisData.getData());
+        }
+        // 获取互斥锁
+        String lockKey = LOCK_SHOP_KEY + id;
+        boolean b = tryLock(lockKey);
+        // 获取锁成功,新建一个线程重建缓存
+        if (b) {
+            executor.execute(() -> {
+                try {
+                    saveShopToRedis(id, 10);
+                } finally {
+                    unlock(lockKey);
+                }
+            });
+        }
+        return R.ok(redisData.getData());
     }
 
     /**
      * 提前将热点数据加入redis缓存中
      */
+    @SneakyThrows
     public void saveShopToRedis(Long id, long seconds) {
         Shop shop = getById(id);
         RedisData redisData = new RedisData(LocalDateTime.now().plusSeconds(seconds), shop);
-        redisUtil.set(CACHE_SHOP_KEY + id, JSONUtil.toJsonStr(redisData));
+        redisUtil.set(CACHE_SHOP_KEY + id, mapper.writeValueAsString(redisData));
     }
 }
