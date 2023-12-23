@@ -8,12 +8,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ltx.dto.LoginFormDTO;
 import com.ltx.dto.UserDTO;
+import com.ltx.entity.R;
 import com.ltx.entity.User;
 import com.ltx.mapper.UserMapper;
 import com.ltx.service.UserService;
-import com.ltx.util.RegexUtils;
+import com.ltx.util.RegexUtil;
 import com.ltx.util.UserHolder;
-import com.ltx.entity.R;
 import io.github.tianxingovo.common.SMSUtil;
 import io.github.tianxingovo.redis.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public R sendCode(String phone) {
         // 校验手机号
-        if (RegexUtils.isPhoneInvalid(phone)) {
+        if (RegexUtil.isPhoneInvalid(phone)) {
             return R.fail("手机号格式错误!");
         }
         // 保存验证码到redis中,过期时间为2分钟
@@ -64,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public R login(LoginFormDTO loginForm) {
         // 校验手机号
         String phone = loginForm.getPhone();
-        if (RegexUtils.isPhoneInvalid(phone)) {
+        if (RegexUtil.isPhoneInvalid(phone)) {
             return R.fail("手机号格式错误!");
         }
         // 从redis中获取验证码并校验
@@ -103,7 +103,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String key = USER_SIGN_KEY + userId + keySuffix;
         // 获取今天是本月的第几天
         int dayOfMonth = now.getDayOfMonth();
-
         return R.ok();
     }
 
@@ -123,6 +122,4 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         save(user);
         return user;
     }
-
-
 }

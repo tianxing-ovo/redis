@@ -3,7 +3,7 @@ package com.ltx.util;
 import cn.hutool.core.util.StrUtil;
 
 
-public class RegexUtils {
+public class RegexUtil {
     /**
      * 是否是无效手机格式
      */
