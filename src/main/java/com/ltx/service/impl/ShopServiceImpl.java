@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +77,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
      * 尝试获取锁
      */
     private boolean tryLock(String key) {
-        Boolean b = redisUtil.setIfAbsent(key, "1", LOCK_SHOP_TTL, TimeUnit.SECONDS);
+        Boolean b = redisUtil.setIfAbsent(key, UUID.randomUUID().toString(), LOCK_SHOP_TTL, TimeUnit.SECONDS);
         return BooleanUtil.isTrue(b);
     }
 
