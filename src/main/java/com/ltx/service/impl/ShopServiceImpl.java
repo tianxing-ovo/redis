@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ltx.constant.RedisConstant;
 import com.ltx.constant.SystemConstant;
 import com.ltx.entity.R;
 import com.ltx.entity.RedisData;
@@ -23,8 +24,6 @@ import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static com.ltx.constant.RedisConstant.*;
-
 
 @Service
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements ShopService {
@@ -41,6 +40,8 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
     /**
      * 根据商铺id查询商铺详情
+     *
+     * @param id 商铺id
      */
     @Override
     public R queryById(Long id) {
@@ -61,7 +62,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         // 更新数据库
         updateById(shop);
         // 删除缓存
-        redisUtil.delete(CACHE_SHOP_KEY + id);
+        redisUtil.delete(RedisConstant.Cache.CACHE_SHOP_KEY + id);
         return R.ok();
     }
 
@@ -77,7 +78,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
      * 尝试获取锁
      */
     private boolean tryLock(String key) {
-        Boolean b = redisUtil.setIfAbsent(key, UUID.randomUUID().toString(), LOCK_SHOP_TTL, TimeUnit.SECONDS);
+        Boolean b = redisUtil.setIfAbsent(key, UUID.randomUUID().toString(), RedisConstant.Lock.LOCK_SHOP_TTL, TimeUnit.SECONDS);
         return BooleanUtil.isTrue(b);
     }
 
@@ -93,7 +94,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
      */
     @SneakyThrows
     private R queryByIdWithMutex(Long id) {
-        String key = CACHE_SHOP_KEY + id;
+        String key = RedisConstant.Cache.CACHE_SHOP_KEY + id;
         String str = redisUtil.get(key);
         Shop shop;
         if (StrUtil.isNotBlank(str)) {
@@ -104,7 +105,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             return R.fail("商铺不存在");
         }
         // 使用redis作为互斥锁,防止缓存击穿
-        String lockKey = LOCK_SHOP_KEY + id;
+        String lockKey = RedisConstant.Lock.LOCK_SHOP_KEY + id;
         try {
             boolean b = tryLock(lockKey);
             if (!b) {
@@ -115,11 +116,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             shop = getById(id);
             if (shop == null) {
                 // 将空字符串写入redis,防止缓存穿透
-                redisUtil.set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
+                redisUtil.set(key, "", RedisConstant.Cache.CACHE_NULL_TTL, TimeUnit.MINUTES);
                 return R.fail("商铺不存在");
             }
             // 过期时间加上随机值,防止缓存雪崩
-            redisUtil.set(key, mapper.writeValueAsString(shop), CACHE_SHOP_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
+            redisUtil.set(key, mapper.writeValueAsString(shop), RedisConstant.Cache.CACHE_SHOP_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -133,7 +134,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
      */
     @SneakyThrows
     private R queryByIdWithLogicalExpire(Long id) {
-        String key = CACHE_SHOP_KEY + id;
+        String key = RedisConstant.Cache.CACHE_SHOP_KEY + id;
         String str = redisUtil.get(key);
         // 热点数据一定存在,为空说明不是热点数据
         if (StrUtil.isBlank(str)) {
@@ -145,7 +146,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             return R.ok(redisData.getData());
         }
         // 获取互斥锁
-        String lockKey = LOCK_SHOP_KEY + id;
+        String lockKey = RedisConstant.Lock.LOCK_SHOP_KEY + id;
         boolean b = tryLock(lockKey);
         // 获取锁成功,新建一个线程重建缓存
         if (b) {
@@ -167,6 +168,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     public void saveShopToRedis(Long id, long seconds) {
         Shop shop = getById(id);
         RedisData redisData = new RedisData(LocalDateTime.now().plusSeconds(seconds), shop);
-        redisUtil.set(CACHE_SHOP_KEY + id, mapper.writeValueAsString(redisData));
+        redisUtil.set(RedisConstant.Cache.CACHE_SHOP_KEY + id, mapper.writeValueAsString(redisData));
     }
 }

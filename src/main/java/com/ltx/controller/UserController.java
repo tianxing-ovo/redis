@@ -4,16 +4,17 @@ package com.ltx.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.ltx.dto.LoginFormDTO;
 import com.ltx.dto.UserDTO;
+import com.ltx.entity.R;
 import com.ltx.entity.User;
 import com.ltx.entity.UserInfo;
 import com.ltx.service.UserInfoService;
 import com.ltx.service.UserService;
-import com.ltx.entity.R;
 import com.ltx.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 
 
 @Slf4j
@@ -29,18 +30,24 @@ public class UserController {
 
     /**
      * 发送手机验证码
+     *
+     * @param phone   手机号码
+     * @param session 会话
      */
     @PostMapping("/code")
-    public R sendCode(@RequestParam("phone") String phone) {
-        return userService.sendCode(phone);
+    public R sendCode(@RequestParam("phone") String phone, HttpSession session) {
+        return userService.sendCode(phone, session);
     }
 
     /**
      * 登录
+     *
+     * @param loginForm 登录请求体
+     * @param session   会话
      */
     @PostMapping("/login")
-    public R login(@RequestBody LoginFormDTO loginForm) {
-        return userService.login(loginForm);
+    public R login(@RequestBody LoginFormDTO loginForm, HttpSession session) {
+        return userService.login(loginForm, session);
     }
 
     /**

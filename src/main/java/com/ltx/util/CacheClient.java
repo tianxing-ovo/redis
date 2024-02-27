@@ -4,6 +4,7 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.ltx.constant.RedisConstant;
 import com.ltx.entity.RedisData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -14,9 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-
-import static com.ltx.constant.RedisConstant.CACHE_NULL_TTL;
-import static com.ltx.constant.RedisConstant.LOCK_SHOP_KEY;
 
 
 @Slf4j
@@ -65,7 +63,7 @@ public class CacheClient {
         // 5.不存在，返回错误
         if (r == null) {
             // 将空值写入redis
-            stringRedisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(key, "", RedisConstant.Cache.CACHE_NULL_TTL, TimeUnit.MINUTES);
             // 返回错误信息
             return null;
         }
@@ -96,7 +94,7 @@ public class CacheClient {
         // 5.2.已过期，需要缓存重建
         // 6.缓存重建
         // 6.1.获取互斥锁
-        String lockKey = LOCK_SHOP_KEY + id;
+        String lockKey = RedisConstant.Lock.LOCK_SHOP_KEY + id;
         boolean isLock = tryLock(lockKey);
         // 6.2.判断是否获取锁成功
         if (isLock){
@@ -137,7 +135,7 @@ public class CacheClient {
 
         // 4.实现缓存重建
         // 4.1.获取互斥锁
-        String lockKey = LOCK_SHOP_KEY + id;
+        String lockKey = RedisConstant.Lock.LOCK_SHOP_KEY + id;
         R r;
         try {
             boolean isLock = tryLock(lockKey);
@@ -152,7 +150,7 @@ public class CacheClient {
             // 5.不存在，返回错误
             if (r == null) {
                 // 将空值写入redis
-                stringRedisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
+                stringRedisTemplate.opsForValue().set(key, "", RedisConstant.Cache.CACHE_NULL_TTL, TimeUnit.MINUTES);
                 // 返回错误信息
                 return null;
             }

@@ -1,23 +1,22 @@
 package com.ltx.service.impl;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ltx.constant.RedisConstant;
+import com.ltx.entity.R;
 import com.ltx.entity.ShopType;
 import com.ltx.mapper.ShopTypeMapper;
 import com.ltx.service.ShopTypeService;
-import com.ltx.entity.R;
 import io.github.tianxingovo.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static com.ltx.constant.RedisConstant.CACHE_SHOP_TYPE_KEY;
-import static com.ltx.constant.RedisConstant.CACHE_SHOP_TYPE_TTL;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -32,15 +31,18 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
      */
     @Override
     public R queryShopTypeList() {
-        String key = CACHE_SHOP_TYPE_KEY + "all";
-        String shopTypeJson = redisUtil.get(key);
+        String key = RedisConstant.Cache.CACHE_SHOP_TYPE_KEY;
+        List<String> shopTypeJsonList = redisUtil.range(key);
         List<ShopType> shopTypeList;
-        if (StrUtil.isNotBlank(shopTypeJson)) {
-            shopTypeList = JSONUtil.toList(shopTypeJson, ShopType.class);
+        // 店铺类型不为空
+        if (CollUtil.isNotEmpty(shopTypeJsonList)) {
+            shopTypeList = shopTypeJsonList.stream().map(shopTypeJson -> JSONUtil.toBean(shopTypeJson, ShopType.class)).collect(Collectors.toList());
             return R.ok(shopTypeList, (long) shopTypeList.size());
         }
         shopTypeList = query().orderByAsc("sort").list();
-        redisUtil.set(key, JSONUtil.toJsonStr(shopTypeList), CACHE_SHOP_TYPE_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
+        shopTypeJsonList = shopTypeList.stream().map(JSONUtil::toJsonStr).collect(Collectors.toList());
+        redisUtil.rightPush(key, shopTypeJsonList.toArray(new String[0]));
+        redisUtil.expire(key, RedisConstant.Cache.CACHE_SHOP_TYPE_TTL + RandomUtil.randomInt(10), TimeUnit.MINUTES);
         return R.ok(shopTypeList, (long) shopTypeList.size());
     }
 }

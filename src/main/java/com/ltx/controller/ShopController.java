@@ -4,9 +4,9 @@ package com.ltx.controller;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ltx.constant.SystemConstant;
+import com.ltx.entity.R;
 import com.ltx.entity.Shop;
 import com.ltx.service.ShopService;
-import com.ltx.entity.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -22,6 +22,8 @@ public class ShopController {
 
     /**
      * 根据商铺id查询商铺详情
+     *
+     * @param id 商铺id
      */
     @GetMapping("/{id}")
     public R queryShopById(@PathVariable("id") Long id) {

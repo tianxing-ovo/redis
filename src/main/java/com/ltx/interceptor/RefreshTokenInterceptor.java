@@ -2,6 +2,7 @@ package com.ltx.interceptor;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ltx.constant.RedisConstant;
 import com.ltx.dto.UserDTO;
 import com.ltx.util.UserHolder;
 import io.github.tianxingovo.redis.RedisUtil;
@@ -15,9 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.ltx.constant.RedisConstant.LOGIN_TOKEN_KEY;
-import static com.ltx.constant.RedisConstant.LOGIN_TOKEN_TTL;
-
 /**
  * 拦截所有请求
  */
@@ -25,10 +23,10 @@ import static com.ltx.constant.RedisConstant.LOGIN_TOKEN_TTL;
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     @Resource
-    RedisUtil redisUtil;
+    private RedisUtil redisUtil;
 
     @Resource
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
@@ -38,7 +36,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
             return true;
         }
         // 基于token获取redis中的用户
-        String key = LOGIN_TOKEN_KEY + token;
+        String key = RedisConstant.Token.LOGIN_TOKEN_KEY + token;
         Map<String, String> userMap = redisUtil.entries(key);
         // 如果用户不存在
         if (userMap.isEmpty()) {
@@ -49,7 +47,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         // 保存用户信息到ThreadLocal中
         UserHolder.set(userDTO);
         // 只要用户对网页进行访问,就刷新token过期时间
-        redisUtil.expire(key, LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
+        redisUtil.expire(key, RedisConstant.Token.LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
         return true;
     }
 
