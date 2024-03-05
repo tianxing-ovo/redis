@@ -37,6 +37,13 @@ public interface RedisConstant {
         Long LOCK_SHOP_TTL = 10L;
     }
 
+    /**
+     * 消息队列
+     */
+    interface MessageQueue {
+        String QUEUE_NAME = "queue";
+    }
+
     String SECKILL_STOCK_KEY = "seckill:stock:";
     String BLOG_LIKED_KEY = "blog:liked:";
     String FEED_KEY = "feed:";
